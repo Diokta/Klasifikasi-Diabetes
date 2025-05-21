@@ -116,35 +116,86 @@ Dari visualisasi ini, terlihat bahwa fitur Glucose, BMI, dan Age memiliki sebara
 Sementara itu, fitur seperti BloodPressure, SkinThickness, dan Insulin tidak menunjukkan pola pemisahan yang terlalu kuat antara dua kelas, meskipun tetap memperlihatkan tren dan kluster tertentu yang bisa ditangkap oleh model non-linear. Sebaran data juga menunjukkan banyaknya outlier, khususnya pada fitur Insulin dan SkinThickness, yang perlu ditangani dalam proses praproses data agar tidak mengganggu proses pelatihan model.
 
 ## Data Preparation
-Pada bagian ini Anda menerapkan dan menyebutkan teknik data preparation yang dilakukan. Teknik yang digunakan pada notebook dan laporan harus berurutan.
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan proses data preparation yang dilakukan
-- Menjelaskan alasan mengapa diperlukan tahapan data preparation tersebut.
+### 1. Handling Missing or Invalid Values
+Mengidentifikasi dan menangani nilai-nilai tidak valid atau kosong dalam dataset. Dalam konteks dataset ini, nilai 0 pada fitur medis seperti Glucose, BloodPressure, SkinThickness, Insulin, dan BMI dianggap sebagai nilai tidak valid, bukan nilai aktual.
+
+Nilai 0 secara medis tidak mungkin untuk fitur-fitur tersebut dan dapat mengganggu proses pelatihan model. Jika dibiarkan, model dapat belajar pola yang salah. Solusinya adalah dengan mengganti nilai 0 menggunakan imputasi, misalnya dengan median atau mean berdasarkan distribusi non-nol.
+
+### 2. Outlier Detection and Treatment
+Mengidentifikasi dan menangani nilai-nilai ekstrem (outlier) yang jauh dari rentang distribusi normal data, biasanya menggunakan boxplot atau z-score/IQR method.
+
+Outlier yang tidak ditangani, seperti pada fitur Insulin atau SkinThickness, dapat menyebabkan bias pada parameter model atau penurunan akurasi, terutama pada model yang sensitif terhadap skala data (seperti regresi atau SVM). Penanganannya bisa dengan menghapus outlier ekstrem atau menggunakan teknik transformasi (log transform) atau winsorization.
+
+### 3. Feature Selection
+Memilih fitur-fitur yang paling relevan terhadap target, berdasarkan korelasi, analisis visual, atau teknik statistik/machine learning.
+
+Dari heatmap dan pairplot, fitur seperti Glucose, BMI, Age, dan Pregnancies memiliki korelasi cukup kuat terhadap Outcome. Menghapus fitur yang tidak relevan membantu mengurangi kompleksitas model dan overfitting.
+
+### 4. Feature Scaling 
+Proses mengubah nilai-nilai numerik dalam dataset agar berada pada skala yang sebanding
+
+Diperlukan agar fitur dengan rentang nilai besar seperti Insulin atau Glucose tidak mendominasi fitur lain dalam proses pelatihan, terutama saat menggunakan model seperti KNN, SVM, dan Neural Network yang sensitif terhadap skala.
+
+### 5. Train-Test Split
+Membagi dataset menjadi dua subset — satu untuk melatih model (train set) dan satu lagi untuk menguji performa model (test set), biasanya dengan rasio 80:20 atau 70:30.
+
+Penting agar performa model dapat dievaluasi pada data yang tidak pernah dilihat saat pelatihan, untuk mengetahui generalisasi model terhadap data baru.
 
 ## Modeling
-Tahapan ini membahas mengenai model machine learning yang digunakan untuk menyelesaikan permasalahan. Anda perlu menjelaskan tahapan dan parameter yang digunakan pada proses pemodelan.
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan kelebihan dan kekurangan dari setiap algoritma yang digunakan.
-- Jika menggunakan satu algoritma pada solution statement, lakukan proses improvement terhadap model dengan hyperparameter tuning. **Jelaskan proses improvement yang dilakukan**.
-- Jika menggunakan dua atau lebih algoritma pada solution statement, maka pilih model terbaik sebagai solusi. **Jelaskan mengapa memilih model tersebut sebagai model terbaik**.
+Model Machine Learing yang digunakan adalah Artificial Neural Network (ANN). Model ini digunakan untuk menyelesaikan permasalahan klasifikasi biner, yaitu memprediksi apakah seorang pasien memiliki diabetes (Outcome = 1) atau tidak (Outcome = 0), berdasarkan data kuantitatif medis seperti glukosa darah, BMI, usia, dan lainnya.
+
+Penggunaan Artificial Neural Network (ANN) dalam proyek prediksi risiko diabetes didasarkan pada kemampuan model ini untuk menangani hubungan non-linear dan kompleks antar fitur dalam data medis. Dataset Pima Indians Diabetes terdiri dari beberapa variabel kuantitatif seperti kadar glukosa darah, indeks massa tubuh (BMI), usia, dan faktor keturunan, yang interaksinya terhadap risiko diabetes tidak selalu linier. ANN memiliki keunggulan karena mampu belajar dari pola-pola tersembunyi dalam data melalui lapisan-lapisan tersembunyi (hidden layers), sehingga cocok untuk memodelkan hubungan multivariat yang kompleks seperti ini.
+
+Selain itu, ANN bersifat fleksibel dan dapat disesuaikan skalanya—baik untuk dataset kecil maupun besar—melalui pengaturan arsitektur seperti jumlah neuron dan lapisan, fungsi aktivasi, serta teknik regularisasi. Dalam konteks klasifikasi biner seperti ini, ANN juga mampu memberikan prediksi probabilistik (melalui aktivasi sigmoid), yang berguna untuk sistem peringatan dini berbasis ambang risiko (threshold). Dibandingkan dengan model-model linear sederhana, ANN memiliki kapasitas representasi yang lebih besar, dan dengan bantuan algoritma optimisasi seperti Adam serta teknik seperti early stopping, overfitting dapat dikendalikan dengan cukup baik.
+
+Dengan mempertimbangkan faktor-faktor tersebut, ANN dipilih karena memberikan keseimbangan antara kemampuan belajar pola kompleks, fleksibilitas arsitektur, dan kinerja prediktif yang baik dalam masalah klasifikasi berbasis data medis seperti ini.
+
+### Model Architecture
+
+Model dibangun menggunakan Keras Sequential API, dengan struktur sebagai berikut:
+
+| Layer        | Tipe    | Jumlah Neuron | Aktivasi | Keterangan                           |
+| ------------ | ------- | ------------- | -------- | ------------------------------------ |
+| Input Layer  | Dense   | 32            | ReLU     | Ukuran input sesuai jumlah fitur (5) |
+| Hidden Layer | Dropout | -             | -        | Dropout 20% untuk regularisasi       |
+| Hidden Layer | Dense   | 16            | ReLU     | Lapisan kedua dengan 16 neuron       |
+| Output Layer | Dense   | 1             | Sigmoid  | Untuk output klasifikasi biner       |
+
+### Parameter yang Digunakan
+| Parameter             | Nilai                   | Keterangan                                    |
+| --------------------- | ----------------------- | --------------------------------------------- |
+| `input_dim`           | 5                       | Jumlah fitur terpilih                         |
+| `activation (hidden)` | `'relu'`                | Untuk menangkap hubungan non-linear           |
+| `activation (output)` | `'sigmoid'`             | Menghasilkan probabilitas klasifikasi biner   |
+| `optimizer`           | `'adam'`                | Optimizer adaptif populer untuk deep learning |
+| `loss`                | `'binary_crossentropy'` | Fungsi loss untuk klasifikasi 0/1             |
+| `batch_size`          | 32                      | Ukuran batch untuk training                   |
+| `epochs`              | 100                     | Epoch maksimum sebelum EarlyStopping berlaku  |
+| `dropout rate`        | 0.2                     | Untuk mencegah overfitting                    |
+| `early stopping`      | patience = 10           | Berhenti jika tidak ada peningkatan val\_loss |
 
 ## Evaluation
-Pada bagian ini anda perlu menyebutkan metrik evaluasi yang digunakan. Lalu anda perlu menjelaskan hasil proyek berdasarkan metrik evaluasi yang digunakan.
 
-Sebagai contoh, Anda memiih kasus klasifikasi dan menggunakan metrik **akurasi, precision, recall, dan F1 score**. Jelaskan mengenai beberapa hal berikut:
-- Penjelasan mengenai metrik yang digunakan
-- Menjelaskan hasil proyek berdasarkan metrik evaluasi
+### Confusion Matrix
+![Confusion Matrix](Image/7_0_0_Confusion_Matrix.png)
 
-Ingatlah, metrik evaluasi yang digunakan harus sesuai dengan konteks data, problem statement, dan solusi yang diinginkan.
+Berdasarkan confusion matrix yang ditampilkan, dapat disimpulkan bahwa model klasifikasi memiliki performa yang cukup baik dalam mendeteksi pasien yang tidak menderita diabetes, ditunjukkan dengan 40 prediksi benar dari total 44 kasus (True Negative). Namun, model masih mengalami kesulitan dalam mendeteksi pasien yang benar-benar menderita diabetes, terbukti dari 9 kasus False Negative, di mana pasien seharusnya terdeteksi sebagai diabetes namun diprediksi tidak menderita. Hal ini cukup krusial dalam konteks medis karena kesalahan jenis ini dapat menyebabkan keterlambatan diagnosis dan penanganan penyakit. Sementara itu, jumlah False Positive tercatat sebanyak 4 kasus, yang berarti pasien non-diabetes salah diklasifikasikan sebagai diabetes, dan meskipun ini bukan kesalahan yang fatal, tetap dapat menimbulkan kecemasan atau pengeluaran medis yang tidak perlu. Dengan demikian, meskipun model ini menunjukkan akurasi yang cukup tinggi secara umum, peningkatan performa khususnya pada deteksi kasus positif (diabetes) masih sangat dibutuhkan, misalnya melalui optimasi threshold, penyesuaian bobot kelas, atau peningkatan recall dan F1-score untuk kelas minoritas.
 
-**Rubrik/Kriteria Tambahan (Opsional)**: 
-- Menjelaskan formula metrik dan bagaimana metrik tersebut bekerja.
+### Classification Report 
 
-**---Ini adalah bagian akhir laporan---**
+![Classification Report](Image/8_0_0_Classification_Report.png)
 
-_Catatan:_
-- _Anda dapat menambahkan gambar, kode, atau tabel ke dalam laporan jika diperlukan. Temukan caranya pada contoh dokumen markdown di situs editor [Dillinger](https://dillinger.io/), [Github Guides: Mastering markdown](https://guides.github.com/features/mastering-markdown/), atau sumber lain di internet. Semangat!_
-- Jika terdapat penjelasan yang harus menyertakan code snippet, tuliskan dengan sewajarnya. Tidak perlu menuliskan keseluruhan kode project, cukup bagian yang ingin dijelaskan saja.
+Secara umum, model mencapai akurasi sebesar 81%, yang menunjukkan bahwa mayoritas prediksi sesuai dengan kondisi sebenarnya. Namun, ketika dilihat secara lebih detail pada masing-masing kelas, terdapat perbedaan kinerja yang signifikan antara kelas No Diabetes dan Diabetes. Model memiliki precision sebesar 0.82 dan recall sebesar 0.91 untuk kelas No Diabetes, menunjukkan bahwa model sangat baik dalam mengenali pasien yang memang tidak menderita diabetes. Sebaliknya, untuk kelas Diabetes, precision berada pada angka 0.78, tetapi recall-nya hanya 0.61, yang berarti sekitar 39% kasus diabetes yang sebenarnya justru tidak terdeteksi oleh model (False Negative). F1-score untuk kelas Diabetes adalah 0.68, yang merepresentasikan keseimbangan antara presisi dan sensitivitas yang masih perlu ditingkatkan.
+
+Dalam konteks deteksi diabetes, recall pada kelas Diabetes menjadi metrik paling krusial. Hal ini karena tujuan utama dari sistem prediktif adalah menemukan sebanyak mungkin kasus yang benar-benar berisiko, meskipun harus mengorbankan sebagian presisi (false positive). Dengan recall yang masih berada di angka 0.61, model saat ini masih berisiko melewatkan pasien diabetes yang sebenarnya, yang berbahaya dalam konteks medis karena dapat menyebabkan keterlambatan penanganan.
+
+Hasil evaluasi model menunjukkan bahwa pendekatan machine learning, khususnya neural network, mampu memberikan solusi yang relevan dan aplikatif terhadap tantangan deteksi dini diabetes. Model ini telah dilatih menggunakan data medis historis seperti kadar glukosa, BMI, usia, jumlah kehamilan, dan riwayat genetik, dan berhasil mencapai akurasi keseluruhan sebesar 81%. Hal ini menunjukkan bahwa data kuantitatif yang sebelumnya belum dimanfaatkan secara optimal kini dapat digunakan secara efektif untuk mengenali pola risiko diabetes secara prediktif.
+
+Permasalahan keterlambatan diagnosis, terutama pada penderita diabetes tipe 2 yang sering tidak menunjukkan gejala awal, dapat mulai diatasi dengan pendekatan ini. Meskipun recall pada kelas diabetes masih berada pada angka 61%, model sudah mampu menangkap lebih dari separuh kasus diabetes dalam data uji tanpa intervensi medis langsung. Ini merupakan langkah awal yang signifikan dalam menyediakan sistem deteksi dini yang bersifat otomatis dan berbasis data, sehingga mempercepat identifikasi risiko sebelum komplikasi serius terjadi.
+
+Lebih jauh, sistem berbasis machine learning seperti ini tidak membutuhkan fasilitas medis atau tenaga kesehatan secara langsung, sehingga sangat relevan untuk digunakan di daerah terpencil atau negara dengan keterbatasan sumber daya. Model dapat diintegrasikan ke dalam aplikasi digital atau sistem skrining berbasis web, memungkinkan masyarakat luas melakukan skrining mandiri menggunakan data sederhana yang mudah diperoleh.
+
+Dengan demikian, pengembangan model klasifikasi ini tidak hanya menjawab kebutuhan teknis, tetapi juga strategis: memberikan solusi deteksi dini yang cepat, efisien, dan inklusif. Meskipun masih terdapat ruang untuk meningkatkan sensitivitas model, terutama dalam menangkap kasus diabetes (recall), sistem ini sudah dapat dijadikan dasar untuk inovasi lebih lanjut dalam layanan kesehatan digital berbasis kecerdasan buatan.
 
