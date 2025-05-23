@@ -138,7 +138,7 @@ Proses mengubah nilai-nilai numerik dalam dataset agar berada pada skala yang se
 Diperlukan agar fitur dengan rentang nilai besar seperti Insulin atau Glucose tidak mendominasi fitur lain dalam proses pelatihan, terutama saat menggunakan model seperti KNN, SVM, dan Neural Network yang sensitif terhadap skala.
 
 ### 5. Train-Test Split
-Membagi dataset menjadi dua subset — satu untuk melatih model (train set) dan satu lagi untuk menguji performa model (test set), biasanya dengan rasio 80:20 atau 70:30.
+Membagi dataset menjadi dua subset — satu untuk melatih model (train set) dan satu lagi untuk menguji performa model (test set), biasanya dengan rasio 80:20.
 
 Penting agar performa model dapat dievaluasi pada data yang tidak pernah dilihat saat pelatihan, untuk mengetahui generalisasi model terhadap data baru.
 
@@ -190,6 +190,8 @@ Berdasarkan confusion matrix yang ditampilkan, dapat disimpulkan bahwa model kla
 Secara umum, model mencapai akurasi sebesar 81%, yang menunjukkan bahwa mayoritas prediksi sesuai dengan kondisi sebenarnya. Namun, ketika dilihat secara lebih detail pada masing-masing kelas, terdapat perbedaan kinerja yang signifikan antara kelas No Diabetes dan Diabetes. Model memiliki precision sebesar 0.82 dan recall sebesar 0.91 untuk kelas No Diabetes, menunjukkan bahwa model sangat baik dalam mengenali pasien yang memang tidak menderita diabetes. Sebaliknya, untuk kelas Diabetes, precision berada pada angka 0.78, tetapi recall-nya hanya 0.61, yang berarti sekitar 39% kasus diabetes yang sebenarnya justru tidak terdeteksi oleh model (False Negative). F1-score untuk kelas Diabetes adalah 0.68, yang merepresentasikan keseimbangan antara presisi dan sensitivitas yang masih perlu ditingkatkan.
 
 Dalam konteks deteksi diabetes, recall pada kelas Diabetes menjadi metrik paling krusial. Hal ini karena tujuan utama dari sistem prediktif adalah menemukan sebanyak mungkin kasus yang benar-benar berisiko, meskipun harus mengorbankan sebagian presisi (false positive). Dengan recall yang masih berada di angka 0.61, model saat ini masih berisiko melewatkan pasien diabetes yang sebenarnya, yang berbahaya dalam konteks medis karena dapat menyebabkan keterlambatan penanganan.
+
+# Kesimpulan
 
 Hasil evaluasi model menunjukkan bahwa pendekatan machine learning, khususnya neural network, mampu memberikan solusi yang relevan dan aplikatif terhadap tantangan deteksi dini diabetes. Model ini telah dilatih menggunakan data medis historis seperti kadar glukosa, BMI, usia, jumlah kehamilan, dan riwayat genetik, dan berhasil mencapai akurasi keseluruhan sebesar 81%. Hal ini menunjukkan bahwa data kuantitatif yang sebelumnya belum dimanfaatkan secara optimal kini dapat digunakan secara efektif untuk mengenali pola risiko diabetes secara prediktif.
 
